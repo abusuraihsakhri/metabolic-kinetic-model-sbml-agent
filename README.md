@@ -1,7 +1,7 @@
-# Metabolic Kinetic Model Sbml Agent
+# Metabolic Kinetic Model SBML Agent
 
 > **Domain:** Computational Biology & AI Drug Discovery  
-> **Reference Guidelines & Standards:** `wwPDB, IUPAC & CLSI Computational Guidelines`
+> **Standards:** SBML Level 3 Version 2, CAP / CLSI / ISO
 
 <div align="center">
 
@@ -16,84 +16,175 @@
 
 ---
 
-## 📖 What It Does
+## Overview
 
-Metabolic Kinetic Model Sbml Agent
+Metabolic Kinetic Model SBML Agent is a multi-agent evaluation platform for kinetic systems biology models. It provides:
 
----
-
-## ⚙️ Key Capabilities & Algorithmic Modules
-
-- **Deterministic Calculation Engine**: Strict compliance with standard reference formulations and thresholds.
-- **Risk & Urgency Classification**: Multi-tier categorization with automated clinical/operational action recommendations.
-- **Validation & Guardrails**: Rigorous input bounds checking and anomaly detection.
+- **Multi-Agent Consensus**: Specialized workers evaluate task payloads against domain thresholds
+- **HMAC-SHA256 Audit Trail**: Cryptographically signed, tamper-evident logging of all evaluations
+- **Zero-PHI Guard**: Outbound data inspection blocking SSNs, MRNs, phone numbers, and patient identifiers
+- **FastAPI REST API**: OpenAPI 3.1 endpoints for programmatic access
+- **Prometheus Metrics**: Operational telemetry export
 
 ---
 
-## 💻 CLI Quickstart & Usage
+## Architecture
 
-### 1. Guided Interactive Mode
+The project contains two parallel agent systems:
+
+### 1. Clinical & Biomedical AI Agent (`agents/`)
+
+| Module | Purpose |
+|--------|---------|
+| `base.py` | Security guards, PHI detection, HMAC audit trail |
+| `models.py` | Pydantic schemas for tasks, alerts, dossiers |
+| `workers.py` | Specialized evaluation workers (QC, Safety, Conformance) |
+| `supervisor.py` | Orchestrator coordinating multi-worker consensus |
+| `api.py` | FastAPI REST endpoints |
+| `llm_factory.py` | LLM provider abstraction (mock, Ollama, Claude, OpenAI) |
+| `learning.py` | Bayesian calibration & active learning feedback |
+| `metrics.py` | Prometheus metrics exporter |
+| `streamer.py` | WebSocket telemetry broadcaster |
+
+### 2. SBML-Kinetics Agent (`sbml_kinetics/`)
+
+| Module | Purpose |
+|--------|---------|
+| `engine.py` | Core algorithmic engine for parameter evaluation |
+| `agents.py` | Specialized sub-agents (Rate Law, ODE Solver, MCA) |
+| `cli.py` | Command-line interface |
+| `server.py` | FastAPI server factory |
+
+---
+
+## Installation
+
 ```bash
-python cli.py
+# Clone the repository
+git clone https://github.com/abusuraihsakhri/metabolic-kinetic-model-sbml-agent.git
+cd metabolic-kinetic-model-sbml-agent
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install fastapi uvicorn pydantic pytest
 ```
 
-### 2. Direct Parameterized Evaluation
+---
+
+## Configuration
+
+Set the required environment variable for the audit trail:
+
 ```bash
-python cli.py --task-id <value> --target <value> --primary <value> --secondary <value>
+export AUDIT_SECRET_KEY="your-secure-random-key-here"
 ```
 
-### Parameter Reference
-- `--task-id`: Specifies input measurement or parameter value.
-- `--target`: Specifies input measurement or parameter value.
-- `--primary`: Specifies input measurement or parameter value.
-- `--secondary`: Specifies input measurement or parameter value.
-- `--critical`: Specifies input measurement or parameter value.
-- `--status`: Specifies input measurement or parameter value.
-- `--input`: Specifies input measurement or parameter value.
-- `--output`: Specifies input measurement or parameter value.
-
-### Input Data Schema
-
-| Field | Description | Requirement |
-|:------|:------------|:------------|
-| `task_id` | Parameter / observation metric | Required |
-| `target_identifier` | Parameter / observation metric | Required |
-| `primary_metric` | Parameter / observation metric | Required |
-| `secondary_metric` | Parameter / observation metric | Required |
-| `is_critical_flag` | Parameter / observation metric | Required |
-| `status_descriptor` | Parameter / observation metric | Required |
+For Docker deployments, set it in your `.env` file or docker-compose environment.
 
 ---
 
-## 🛡️ Security & Enterprise Architecture
+## Usage
 
-* **Zero-PHI Outbound Interceptor:** Active AST and regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers.
-* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation and state transition.
-* **Air-Gapped LLM Reasoning Adapter:** Agnostic integration for local Ollama instances (`llama3`, `mistral`), Claude 3.5 Sonnet, GPT-4o, and deterministic test mocks.
-* **Active Learning Bayesian Calibration:** Dynamic tracker updating worker reliability weights and monitoring Brier calibration drift.
-* **FastAPI & Prometheus Telemetry:** Exposes OpenAPI 3.1 REST endpoints and operational Prometheus metrics (`/metrics`).
-
----
-
-## 🧪 Testing & Verification
-
-Run the automated test suite:
+### CLI Commands
 
 ```bash
+# Run single task evaluation
+python cli.py audit --task-id TASK-001 --primary 28.5 --secondary 14.2 --critical --status DISCORDANT
+
+# Batch process CSV records
+python cli.py batch -i sample.csv -o results.csv
+
+# Query the supervisory chat
+python cli.py chat "What is the system status?"
+
+# Verify audit trail integrity
+python cli.py verify-audit
+
+# Launch REST API server
+python cli.py serve --host 127.0.0.1 --port 8000
+```
+
+### REST API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check |
+| `/metrics` | GET | Prometheus metrics |
+| `/api/audit` | POST | Submit task for evaluation |
+| `/api/chat` | POST | Query supervisory assistant |
+| `/api/audit/logs` | GET | Retrieve audit trail |
+
+### Example API Request
+
+```bash
+curl -X POST http://localhost:8000/api/audit \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task_id": "TASK-001",
+    "target_identifier": "TARGET-01",
+    "primary_metric": 28.5,
+    "secondary_metric": 14.2,
+    "status_descriptor": "DISCORDANT",
+    "is_critical_flag": true
+  }'
+```
+
+---
+
+## Input Data Schema
+
+| Field | Type | Description | Required |
+|-------|------|-------------|----------|
+| `task_id` | string | Unique task identifier | Yes |
+| `target_identifier` | string | Target entity identifier | Yes |
+| `primary_metric` | float | Primary measurement value | Yes |
+| `secondary_metric` | float | Secondary kinetic index | No (default: 0.0) |
+| `status_descriptor` | string | Status/phenotype code | No (default: "NOMINAL") |
+| `is_critical_flag` | boolean | Emergency escalation flag | No (default: false) |
+
+---
+
+## Testing
+
+```bash
+# Run all tests
 pytest -v
-```
 
-Execute high-throughput batch simulation benchmarks:
+# Run with coverage
+pytest -v --cov=agents --cov=sbml_kinetics
 
-```bash
-python simulator.py --tasks 1000 --concurrency 8
+# Run simulation benchmark
+python simulator.py 1000
 ```
 
 ---
 
-## 🐳 Container Deployment
+## Docker Deployment
 
 ```bash
+# Build and run with Docker Compose
+export AUDIT_SECRET_KEY="your-production-key"
+docker-compose up --build
+
+# Or use Docker directly
 docker build -t metabolic-kinetic-model-sbml-agent .
-docker run -p 8000:8000 metabolic-kinetic-model-sbml-agent
+docker run -p 8000:8000 -e AUDIT_SECRET_KEY="your-key" metabolic-kinetic-model-sbml-agent
 ```
+
+---
+
+## Security Features
+
+- **Zero-PHI Outbound Interceptor**: AST and regex inspection blocking SSNs, MRNs, phone numbers, emails, DOBs, and patient names
+- **Tamper-Evident HMAC-SHA256 Audit Trail**: Chained, cryptographically signed logs with signature verification
+- **Input Validation**: Pydantic models reject NaN, infinite, and empty values
+- **Secure Defaults**: No hardcoded secrets; AUDIT_SECRET_KEY required at runtime
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
