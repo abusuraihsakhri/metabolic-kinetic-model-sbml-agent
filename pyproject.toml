@@ -1,27 +1,31 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "metabolic-kinetic-model-sbml-engine"
-version = "2.0.0"
-description = "SBML-Kinetics: Kinetic Systems Biology Model ODE Solver Engine"
+name = "metabolic-kinetic-model-sbml-agent"
+version = "2.0.1"
+description = "SBML structural inspection and threshold-based metric evaluation"
 readme = "README.md"
-authors = [{ name = "Dr. Abu Suraih Sakhri", email = "abusuraih@example.com" }]
+requires-python = ">=3.10"
 license = { text = "MIT" }
+authors = [{ name = "Dr. Abu Suraih Sakhri" }]
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Topic :: Security/Cryptography",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
-requires-python = ">=3.9"
-dependencies = []
+dependencies = ["pydantic>=2,<3", "fastapi>=0.110,<1", "uvicorn>=0.29,<1"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10", "httpx>=0.27,<1"]
 
 [project.scripts]
-metabolic-kinetic-model-sbml-engine = "sbml_kinetics.cli:main"
+metabolic-kinetic-model-sbml-agent = "sbml_kinetics.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/abusuraihsakhri/metabolic-kinetic-model-sbml-engine"
-Repository = "https://github.com/abusuraihsakhri/metabolic-kinetic-model-sbml-engine.git"
+Homepage = "https://github.com/abusuraihsakhri/metabolic-kinetic-model-sbml-agent"
+Repository = "https://github.com/abusuraihsakhri/metabolic-kinetic-model-sbml-agent"
+
+[tool.setuptools.packages.find]
+include = ["agents*", "sbml_kinetics*"]

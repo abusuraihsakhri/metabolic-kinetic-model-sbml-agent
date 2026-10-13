@@ -1,7 +1,7 @@
 """
-Metabolic Kinetic Model Sbml Agent — Enterprise Automated Analytical Suite.
-Domain: Clinical & Biomedical AI
-Standard: CAP / CLSI / ISO Standards
+Metabolic Kinetic Model SBML Agent — heuristic metric evaluation.
+Domain: Rule-based metric assessment
+Standard: Project-defined rules; not a standards-conformance engine
 
 """
-__version__ = "3.0.0-ENTERPRISE"
+__version__ = "2.0.1"

@@ -1,190 +1,77 @@
 # Metabolic Kinetic Model SBML Agent
 
-> **Domain:** Computational Biology & AI Drug Discovery  
-> **Standards:** SBML Level 3 Version 2, CAP / CLSI / ISO
+Tools for **structural inspection of SBML XML** and **rule-based evaluation of numeric metrics**. The repository includes an entirely local browser interface, a Python CLI, and a FastAPI service.
 
-<div align="center">
+> **Scope:** Structural inspection is not SBML schema validation. The evaluation thresholds are illustrative project rules, not calibrated clinical or biochemical limits. This repository does **not** implement ODE integration, kinetic parameter fitting, steady-state analysis, metabolic control coefficients, or flux-balance analysis. The enrichment classes are threshold-oriented prototypes, not implementations of those methods.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
+## Browser application
 
-</div>
+The static application is in [web/](web/). It can be hosted on GitHub Pages without a Python backend. It:
 
----
+- Parses a local SBML XML file (maximum 2 MB) to inventory the model, compartments, species, parameters, reactions, stoichiometry, and declared kinetic laws (including MathML source).
+- Applies the repository's existing illustrative metric rules: primary value > 25; secondary value > 12; critical flag; status-descriptor keyword checks.
+- Exports SBML structure summaries and metric results as JSON.
+- Runs completely in the browser without uploading input to a server, without browser storage, and without fabricating signed audits or model simulations.
 
-## Overview
-
-Metabolic Kinetic Model SBML Agent is a multi-agent evaluation platform for kinetic systems biology models. It provides:
-
-- **Multi-Agent Consensus**: Specialized workers evaluate task payloads against domain thresholds
-- **HMAC-SHA256 Audit Trail**: Cryptographically signed, tamper-evident logging of all evaluations
-- **Zero-PHI Guard**: Outbound data inspection blocking SSNs, MRNs, phone numbers, and patient identifiers
-- **FastAPI REST API**: OpenAPI 3.1 endpoints for programmatic access
-- **Prometheus Metrics**: Operational telemetry export
-
----
-
-## Architecture
-
-The project contains two parallel agent systems:
-
-### 1. Clinical & Biomedical AI Agent (`agents/`)
-
-| Module | Purpose |
-|--------|---------|
-| `base.py` | Security guards, PHI detection, HMAC audit trail |
-| `models.py` | Pydantic schemas for tasks, alerts, dossiers |
-| `workers.py` | Specialized evaluation workers (QC, Safety, Conformance) |
-| `supervisor.py` | Orchestrator coordinating multi-worker consensus |
-| `api.py` | FastAPI REST endpoints |
-| `llm_factory.py` | LLM provider abstraction (mock, Ollama, Claude, OpenAI) |
-| `learning.py` | Bayesian calibration & active learning feedback |
-| `metrics.py` | Prometheus metrics exporter |
-| `streamer.py` | WebSocket telemetry broadcaster |
-
-### 2. SBML-Kinetics Agent (`sbml_kinetics/`)
-
-| Module | Purpose |
-|--------|---------|
-| `engine.py` | Core algorithmic engine for parameter evaluation |
-| `agents.py` | Specialized sub-agents (Rate Law, ODE Solver, MCA) |
-| `cli.py` | Command-line interface |
-| `server.py` | FastAPI server factory |
-
----
-
-## Installation
+Open locally over HTTP (ES modules may be restricted under `file://`):
 
 ```bash
-# Clone the repository
+python -m http.server 8080 --directory web
+# Visit http://localhost:8080/
+```
+
+The app uses modern browser APIs (DOMParser, File/Blob, ES modules), and is intended for current Chrome, Firefox, Safari and Edge. Browser compatibility has not been exhaustively certified.
+
+## Python installation
+
+Requires Python 3.10 or newer.
+
+```bash
 git clone https://github.com/abusuraihsakhri/metabolic-kinetic-model-sbml-agent.git
 cd metabolic-kinetic-model-sbml-agent
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install fastapi uvicorn pydantic pytest
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[test]'
 ```
 
----
-
-## Configuration
-
-Set the required environment variable for the audit trail:
+### SBML inspection
 
 ```bash
-export AUDIT_SECRET_KEY="your-secure-random-key-here"
+metabolic-kinetic-model-sbml-agent inspect-sbml examples/first_order_decay.xml
+# Or: python -m sbml_kinetics.cli inspect-sbml my-model.xml
 ```
 
-For Docker deployments, set it in your `.env` file or docker-compose environment.
+Outputs a JSON inventory. Rejects malformed XML, DTD/entity declarations, and input above 2 MB. It does not interpret SBML rules, kinetics, units, or solve equations.
 
----
+### Rule-based evaluation and API
 
-## Usage
-
-### CLI Commands
+The repository retains two legacy evaluation paths: `cli.py` / `agents/` and `sbml_kinetics/cli.py` / `sbml_kinetics/`. They use different hard-coded secondary limits (12 versus 10); their results should not be treated as interchangeable or domain standards.
 
 ```bash
-# Run single task evaluation
-python cli.py audit --task-id TASK-001 --primary 28.5 --secondary 14.2 --critical --status DISCORDANT
-
-# Batch process CSV records
+export AUDIT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+python cli.py audit --task-id T1 --primary 28.5 --secondary 14.2 --status DISCORDANT
 python cli.py batch -i sample.csv -o results.csv
-
-# Query the supervisory chat
-python cli.py chat "What is the system status?"
-
-# Verify audit trail integrity
 python cli.py verify-audit
-
-# Launch REST API server
 python cli.py serve --host 127.0.0.1 --port 8000
 ```
 
-### REST API Endpoints
+The main FastAPI app (`agents.api:app`) exposes `GET /health`, `GET /metrics` (JSON counts), `POST /api/audit`, `POST /api/chat` (deterministic mock, not actual model inference), and `GET /api/audit/logs`. Set `AUDIT_LOG_READ_TOKEN` and supply that value in the `X-Audit-Token` header to read audit logs; otherwise access is denied. Interactive API documentation is available at `/docs` when the local server is running.
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Health check |
-| `/metrics` | GET | Prometheus metrics |
-| `/api/audit` | POST | Submit task for evaluation |
-| `/api/chat` | POST | Query supervisory assistant |
-| `/api/audit/logs` | GET | Retrieve audit trail |
+The Python audit chain uses HMAC-SHA256 signatures and the environment-provided key; logs are **process-local, in memory, and not durable**. Do not expose the API publicly without independent authentication, HTTPS, access controls, and appropriate data governance. Its pattern-based identifier screen is not a complete PHI de-identification or HIPAA compliance solution.
 
-### Example API Request
+Docker is available using `docker compose up --build` after securely setting `AUDIT_SECRET_KEY`; Compose binds the port to localhost by default. Never commit your populated `.env` file.
+
+## Tests
 
 ```bash
-curl -X POST http://localhost:8000/api/audit \
-  -H "Content-Type: application/json" \
-  -d '{
-    "task_id": "TASK-001",
-    "target_identifier": "TARGET-01",
-    "primary_metric": 28.5,
-    "secondary_metric": 14.2,
-    "status_descriptor": "DISCORDANT",
-    "is_critical_flag": true
-  }'
+python -m pytest -q
+node --check web/app.js
+node --test web/app.test.mjs
+python -m build  # requires: python -m pip install build
 ```
 
----
-
-## Input Data Schema
-
-| Field | Type | Description | Required |
-|-------|------|-------------|----------|
-| `task_id` | string | Unique task identifier | Yes |
-| `target_identifier` | string | Target entity identifier | Yes |
-| `primary_metric` | float | Primary measurement value | Yes |
-| `secondary_metric` | float | Secondary kinetic index | No (default: 0.0) |
-| `status_descriptor` | string | Status/phenotype code | No (default: "NOMINAL") |
-| `is_critical_flag` | boolean | Emergency escalation flag | No (default: false) |
-
----
-
-## Testing
-
-```bash
-# Run all tests
-pytest -v
-
-# Run with coverage
-pytest -v --cov=agents --cov=sbml_kinetics
-
-# Run simulation benchmark
-python simulator.py 1000
-```
-
----
-
-## Docker Deployment
-
-```bash
-# Build and run with Docker Compose
-export AUDIT_SECRET_KEY="your-production-key"
-docker-compose up --build
-
-# Or use Docker directly
-docker build -t metabolic-kinetic-model-sbml-agent .
-docker run -p 8000:8000 -e AUDIT_SECRET_KEY="your-key" metabolic-kinetic-model-sbml-agent
-```
-
----
-
-## Security Features
-
-- **Zero-PHI Outbound Interceptor**: AST and regex inspection blocking SSNs, MRNs, phone numbers, emails, DOBs, and patient names
-- **Tamper-Evident HMAC-SHA256 Audit Trail**: Chained, cryptographically signed logs with signature verification
-- **Input Validation**: Pydantic models reject NaN, infinite, and empty values
-- **Secure Defaults**: No hardcoded secrets; AUDIT_SECRET_KEY required at runtime
-
----
+CI checks Python 3.10–3.12, package builds, and the standalone browser evaluator. GitHub Pages deployment, when enabled, publishes the static `web/` directory; the Python REST service cannot run on GitHub Pages.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+[MIT](LICENSE).

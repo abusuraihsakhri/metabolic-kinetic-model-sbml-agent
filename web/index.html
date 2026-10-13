@@ -1,236 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metabolic Kinetic Model Sbml Engine — Operations Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #090d16;
-            --card: #111827;
-            --border: #1f293d;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.25);
-            --text: #f3f4f6;
-            --text-muted: #9ca3af;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 2rem;
-            min-height: 100vh;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .header-title h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-        .header-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: var(--accent-glow);
-            color: var(--accent);
-            border: 1px solid var(--accent);
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 1.5rem;
-        }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .card h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.65rem 0.9rem;
-            background: #0d1322;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
-        .btn {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 0.7rem 1.4rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn:hover { background: #2563eb; }
-        .terminal {
-            background: #060911;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #10b981;
-            height: 380px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .metrics-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .metric-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-        .metric-val { font-size: 1.4rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
-        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Metabolic kinetics | SBML model inspector</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color-scheme:dark;color:#e8eef7;background:#0d1422}
+    *{box-sizing:border-box}body{margin:0;line-height:1.5}main{max-width:1120px;margin:auto;padding:24px 20px 64px}
+    h1{font-size:clamp(1.55rem,3vw,2.2rem);line-height:1.15;margin:4px 0 12px}h2{font-size:1.12rem;margin:0 0 10px}
+    p{margin:6px 0 16px;color:#b7c5d9}a{color:#a5cbff}.eyebrow{color:#91b5ed;letter-spacing:.12em;text-transform:uppercase;font-size:.75rem;font-weight:700}
+    header{border-bottom:1px solid #34445d;margin-bottom:22px;padding-bottom:15px}
+    .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}.panel{background:#151f30;border:1px solid #34445d;border-radius:12px;padding:20px;min-width:0}
+    .span{grid-column:1/-1}label{display:block;font-size:.88rem;font-weight:600;margin:12px 0 5px}input:not([type=checkbox]){display:block;width:100%;min-width:0;border:1px solid #51617c;border-radius:7px;background:#0e1727;color:#eef3fc;padding:10px;font:inherit}
+    input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #7aaefa;outline-offset:2px}
+    .inline{display:flex;gap:8px;align-items:center;margin:16px 0}.inline input{width:auto}.inline label{margin:0}
+    button{padding:10px 16px;background:#326ad6;border:1px solid #6da1f5;border-radius:7px;color:white;font:inherit;font-weight:600;cursor:pointer;margin:4px 10px 4px 0}
+    button:disabled{opacity:.5;cursor:default}button.secondary{background:#26354c;border-color:#51617c}
+    .hint{font-size:.83rem;color:#bbc9db}.status{min-height:22px;font-size:.88rem;font-weight:600;color:#97d9b8}.error{color:#ffb2a8}
+    pre{background:#0b1220;border:1px solid #354761;color:#d3e4f8;border-radius:8px;padding:14px;max-height:380px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.84rem;min-height:140px}
+    dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}dl div{padding:10px;background:#0e1727;border-radius:8px}
+    dt{color:#b7c5d9;font-size:.79rem}dd{font-size:1.12rem;font-weight:700;margin:0}
+    footer{margin-top:22px;color:#b7c5d9;font-size:.86rem}code{color:#c5dcfc}
+    @media(max-width:760px){main{padding:18px 12px 40px}.grid{grid-template-columns:1fr}.panel{padding:16px}}
+  </style>
 </head>
 <body>
-
-    <div class="header">
-        <div class="header-title">
-            <h1>Metabolic Kinetic Model Sbml Engine</h1>
-            <p>Domain: Clinical & Cryptographic AI | Standard: CAP / CLSI / NIST Standards | LabMind-Atlas Architecture</p>
-        </div>
-        <div>
-            <span class="badge">Air-Gapped Active</span>
-            <span class="badge" style="background: rgba(16,185,129,0.2); color: #10b981; border-color: #10b981;">Zero-PHI Guard Active</span>
-        </div>
-    </div>
-
-    <div class="metrics-bar">
-        <div class="metric-box">
-            <div class="metric-label">System Status</div>
-            <div class="metric-val" style="color: var(--success);" id="m-status">OPTIMAL</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Tasks Processed</div>
-            <div class="metric-val" id="m-tasks">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Audit Blocks Signed</div>
-            <div class="metric-val" id="m-audit">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">PHI Interceptions</div>
-            <div class="metric-val" style="color: var(--accent);" id="m-phi">0</div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card">
-            <h2>⚙️ Dispatch Distributed Component Audit</h2>
-            <div class="form-group">
-                <label>Task / Sample ID</label>
-                <input type="text" id="task_id" value="TASK-2026-LIVE-01">
-            </div>
-            <div class="form-group">
-                <label>Target Identifier</label>
-                <input type="text" id="target_id" value="SPECIMEN-ALPHA-77">
-            </div>
-            <div class="form-group">
-                <label>Primary Measurement / Value</label>
-                <input type="number" id="primary_metric" value="29.4" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Secondary Metric / Kinetic Index</label>
-                <input type="number" id="secondary_metric" value="14.8" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Status / Phenotype Descriptor</label>
-                <input type="text" id="status_descriptor" value="DISCORDANT_ANOMALY">
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="is_critical" checked> Trigger Emergency / Critical Flag</label>
-            </div>
-            <button class="btn" onclick="runAudit()">Execute Distributed Component Audit</button>
-        </div>
-
-        <div class="card">
-            <h2>📊 Real-Time Consensus Dossier & Audit Log</h2>
-            <div class="terminal" id="outputConsole">// Metabolic Kinetic Model Sbml Engine Operations Console Ready
-// Connection established with Air-Gapped Supervisor
-// Cryptographic HMAC-SHA256 audit ledger loaded.
-// Ready for live task payload dispatch...</div>
-        </div>
-    </div>
-
-    <script>
-        async function runAudit() {
-            const consoleEl = document.getElementById('outputConsole');
-            consoleEl.innerText = "// Dispatching task across specialized workers...
-// Invoking InvariantQCWorker, SafetyEscalationWorker, ProtocolWorker...";
-
-            const payload = {
-                task_id: document.getElementById('task_id').value,
-                target_identifier: document.getElementById('target_id').value,
-                primary_metric: parseFloat(document.getElementById('primary_metric').value),
-                secondary_metric: parseFloat(document.getElementById('secondary_metric').value),
-                status_descriptor: document.getElementById('status_descriptor').value,
-                is_critical_flag: document.getElementById('is_critical').checked
-            };
-
-            try {
-                const res = await fetch('/api/audit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                consoleEl.innerText = JSON.stringify(data, null, 2);
-                document.getElementById('m-tasks').innerText = parseInt(document.getElementById('m-tasks').innerText) + 1;
-                document.getElementById('m-audit').innerText = parseInt(document.getElementById('m-audit').innerText) + 1;
-            } catch (err) {
-                consoleEl.innerText = "// Offline / Simulation Output:\n" + JSON.stringify({
-                    dossier_id: "DOSSIER-SIM-" + Math.floor(Math.random()*10000),
-                    system: "metabolic-kinetic-model-sbml-engine",
-                    domain: "Clinical & Cryptographic AI",
-                    task_id: payload.task_id,
-                    overall_urgency: payload.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK",
-                    integrity_status: "DISCORDANT_ANOMALY",
-                    alerts: [
-                        { worker: "InvariantQCWorker", alert: "Primary metric exceeds upper reference bound" },
-                        { worker: "SafetyEscalationWorker", alert: "Critical emergency interlock flag active" }
-                    ],
-                    audit_hash: "HMAC_SHA256_e83f9a72b941d6c381f9"
-                }, null, 2);
-            }
-        }
-    </script>
+<main>
+  <header>
+    <div class="eyebrow">Systems biology • local browser utility</div>
+    <h1>Metabolic kinetics &amp; SBML inspector</h1>
+    <p>Inspect SBML model structure and run the repository's existing threshold-based metric checks. Files and entered values stay in your browser.</p>
+  </header>
+  <div class="grid">
+    <section class="panel">
+      <h2>1. Inspect an SBML file</h2>
+      <p class="hint">Reads the model, compartments, species, parameters, reactions, and kinetic-law declarations. Structural inspection only: this is not an SBML validator or ODE solver.</p>
+      <label for="sbml_file">SBML XML file (max. 2 MB)</label>
+      <input id="sbml_file" type="file" accept=".sbml,.xml,text/xml,application/xml">
+      <p class="hint"><a href="./sample-decay.xml" download="sample-decay.xml">Download a sample SBML model</a> to try the inspector.</p>
+      <p id="modelStatus" class="status" role="status" aria-live="polite">No model loaded.</p>
+      <button id="downloadModel" class="secondary" type="button" disabled>Export model summary (JSON)</button>
+    </section>
+    <section class="panel">
+      <h2>Model summary</h2>
+      <pre id="modelReport" aria-label="SBML model summary">Select an SBML file to inspect its structure. No file is uploaded.</pre>
+    </section>
+    <section class="panel">
+      <h2>2. Evaluate metrics</h2>
+      <p class="hint">Demo rule engine: primary &gt; 25, secondary &gt; 12, critical flag, and descriptor keywords. These are project-defined thresholds, not biological or clinical reference limits.</p>
+      <form id="auditForm">
+        <label for="task_id">Task ID</label><input id="task_id" required maxlength="120" value="TASK-001">
+        <label for="target_id">Target identifier</label><input id="target_id" required maxlength="120" value="TARGET-01">
+        <label for="primary_metric">Primary metric</label><input id="primary_metric" required type="number" step="any" value="28.5">
+        <label for="secondary_metric">Secondary metric</label><input id="secondary_metric" required type="number" step="any" value="14.2">
+        <label for="status_descriptor">Status descriptor</label><input id="status_descriptor" maxlength="200" value="DISCORDANT">
+        <div class="inline"><input id="is_critical" type="checkbox"><label for="is_critical">Critical flag</label></div>
+        <button type="submit">Evaluate locally</button><button id="downloadResult" class="secondary" type="button" disabled>Export result (JSON)</button>
+      </form>
+      <p id="auditStatus" class="status" role="status" aria-live="polite">Ready to evaluate.</p>
+    </section>
+    <section class="panel">
+      <h2>Evaluation result</h2>
+      <dl><div><dt>Evaluations this session</dt><dd id="taskCount">0</dd></div><div><dt>Last status</dt><dd id="resultStatus">—</dd></div></dl>
+      <pre id="outputConsole" aria-label="Evaluation result">Enter values and select “Evaluate locally”. The browser does not generate an HMAC audit signature.</pre>
+    </section>
+  </div>
+  <footer>Privacy: this page makes no API calls and stores no models or task data in browser storage. Structural inspection does not establish SBML specification conformance. For the Python CLI, API, and signed server-side audit trail, see the <a href="https://github.com/abusuraihsakhri/metabolic-kinetic-model-sbml-agent">repository</a>.</footer>
+</main>
+<script type="module" src="./app.js"></script>
 </body>
 </html>
