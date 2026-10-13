@@ -29,3 +29,12 @@ def test_bad_xml_rejected(invalid):
 def test_size_limit():
     with pytest.raises(ValueError,match="2 MB"):
         inspect_sbml("<sbml>"+" "*2_000_000+"</sbml>")
+
+
+def test_cli_reads_example_file(capsys):
+    from pathlib import Path
+    from sbml_kinetics.cli import main
+    example=Path(__file__).resolve().parent.parent / "examples" / "first_order_decay.xml"
+    assert main(["inspect-sbml", str(example)]) == 0
+    output=capsys.readouterr().out
+    assert '"model_id": "first_order_decay"' in output

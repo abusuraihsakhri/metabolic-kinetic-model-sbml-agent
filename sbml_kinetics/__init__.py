@@ -1,6 +1,6 @@
 """
-SBML-Kinetics: Kinetic Systems Biology Model ODE Solver Agent
+SBML-Kinetics: structural SBML inspection and metric evaluation
 Domain: Systems Biology
-Standard: SBML Level 3 Version 2 Specification
+Scope: Structural inspection only (not full SBML validation)
 """
-__version__ = "2.0.0-FRONTIER"
+__version__ = "2.0.1"

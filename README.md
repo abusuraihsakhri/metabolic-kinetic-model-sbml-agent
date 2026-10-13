@@ -37,7 +37,7 @@ python -m pip install -e '.[test]'
 ### SBML inspection
 
 ```bash
-metabolic-kinetic-model-sbml-agent inspect-sbml my-model.xml
+metabolic-kinetic-model-sbml-agent inspect-sbml examples/first_order_decay.xml
 # Or: python -m sbml_kinetics.cli inspect-sbml my-model.xml
 ```
 
