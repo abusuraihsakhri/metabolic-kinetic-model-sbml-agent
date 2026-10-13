@@ -15,7 +15,7 @@ def create_app():
 
         app = FastAPI(
             title="SBML-Kinetics: Kinetic Systems Biology Model ODE Solver Agent",
-            description="Parses SBML Level 3 Version 2 models, evaluates rate laws (Hill kinetics, mass-action), and performs steady-state sensitivity.",
+            description="Illustrative rule-based metric evaluation; SBML XML inspection is available through the CLI.",
             version="2.0.0-FRONTIER",
         )
 

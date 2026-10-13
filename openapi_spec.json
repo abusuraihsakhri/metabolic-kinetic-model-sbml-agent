@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Metabolic Kinetic Model Sbml Engine API",
-    "description": "Enterprise Distributed Component Platform (Clinical & Cryptographic AI) adhering to CAP / CLSI / NIST Standards.",
-    "version": "3.0.0-ENTERPRISE",
+    "title": "Metabolic Kinetic Model SBML Agent API",
+    "description": "Rule-based metric evaluation and HMAC audit logging. Does not validate or solve SBML.",
+    "version": "2.0.1",
     "contact": {
       "name": "Dr. Abu Suraih Sakhri",
       "url": "https://github.com/abusuraihsakhri"
@@ -25,7 +25,7 @@
         "summary": "Prometheus operational metrics",
         "responses": {
           "200": {
-            "description": "Prometheus text metrics"
+            "description": "JSON task/audit counts (not Prometheus text)"
           }
         }
       }
@@ -96,19 +96,32 @@
         },
         "responses": {
           "200": {
-            "description": "Supervisory response"
+            "description": "Mock supervisor response; no external model inference"
           }
         }
       }
     },
     "/api/audit/logs": {
       "get": {
-        "summary": "Retrieve and cryptographically verify HMAC audit trail",
+        "summary": "Read audit log metadata (requires configured X-Audit-Token)",
         "responses": {
           "200": {
             "description": "Cryptographic audit trail"
+          },
+          "403": {
+            "description": "Audit log access not configured or denied"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "X-Audit-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     }
   }

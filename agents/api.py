@@ -15,8 +15,8 @@ supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Metabolic Kinetic Model Sbml Agent API",
-    description="Enterprise Distributed Component Platform (Clinical & Biomedical AI)",
-    version="3.0.0-ENTERPRISE",
+    description="Rule-based metric evaluation and local HMAC audit trail; not an SBML validator or ODE solver",
+    version="2.0.1",
 )
 
 
@@ -33,7 +33,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "HEALTHY", "service": "metabolic-kinetic-model-sbml-agent", "domain": "Clinical & Biomedical AI", "standard": "CAP / CLSI / ISO Standards", "version": "3.0.0-ENTERPRISE"}
+    return {"status": "HEALTHY", "service": "metabolic-kinetic-model-sbml-agent", "domain": "Heuristic metric evaluation", "standard": "Project-defined thresholds", "version": "2.0.1"}
 
 
 @app.get("/metrics")
