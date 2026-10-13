@@ -101,7 +101,7 @@ class AuditTrail:
         return True
 
     def get_trail(self) -> List[Dict[str, Any]]:
-        return self.logs
+        return [entry.copy() for entry in self.logs]
 
 
 _GLOBAL_AUDIT: Optional[AuditTrail] = None

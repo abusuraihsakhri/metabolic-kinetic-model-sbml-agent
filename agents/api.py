@@ -1,10 +1,13 @@
 """
 FastAPI REST API Server for Metabolic Kinetic Model Sbml Agent.
 """
-from typing import Dict, Any, List
-from fastapi import FastAPI, HTTPException
+import os
+import secrets
+from typing import Dict, Any, List, Optional
+from fastapi import FastAPI, HTTPException, Header, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from .base import AuditLogger, PHIGuard
+from .base import AuditLogger, PHIGuard, SecurityException
 from .models import SystemTaskPayload, ConsensusDossier
 from .supervisor import SystemSupervisor
 
@@ -15,6 +18,13 @@ app = FastAPI(
     description="Enterprise Distributed Component Platform (Clinical & Biomedical AI)",
     version="3.0.0-ENTERPRISE",
 )
+
+
+@app.exception_handler(SecurityException)
+async def security_exception_handler(request: Request, exc: SecurityException):
+    if "PHI Outbound Guard" in str(exc):
+        return JSONResponse(status_code=422, content={"detail": "Input contains a prohibited identifier."})
+    return JSONResponse(status_code=503, content={"detail": "Audit service is not configured."})
 
 
 class ChatRequest(BaseModel):
@@ -51,5 +61,8 @@ def api_chat(req: ChatRequest):
 
 
 @app.get("/api/audit/logs")
-def api_audit_logs():
+def api_audit_logs(x_audit_token: Optional[str] = Header(default=None)):
+    configured = os.environ.get("AUDIT_LOG_READ_TOKEN", "")
+    if not configured or not x_audit_token or not secrets.compare_digest(configured, x_audit_token):
+        raise HTTPException(status_code=403, detail="Audit log access is disabled or unauthorized.")
     return {"audit_trail": AuditLogger.get_trail(), "verified": AuditLogger.verify_integrity()}

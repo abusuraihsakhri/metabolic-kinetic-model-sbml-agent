@@ -24,6 +24,10 @@ def main(argv=None):
     p_audit.add_argument("--critical", action="store_true")
     p_audit.add_argument("--status", default="DISCORDANT")
 
+    # Inspect an SBML XML model (structural inventory only)
+    p_inspect = subparsers.add_parser("inspect-sbml", help="Summarize species, reactions, and declared kinetics")
+    p_inspect.add_argument("file", help="Path to an SBML XML file")
+
     # Chat
     p_chat = subparsers.add_parser("chat", help="System configuration query")
     p_chat.add_argument("query", nargs="+")
@@ -39,6 +43,15 @@ def main(argv=None):
     p_serve.add_argument("--port", type=int, default=8000)
 
     args = parser.parse_args(argv)
+
+    if args.command == "inspect-sbml":
+        from .inspection import inspect_sbml_file
+        try:
+            print(json.dumps(inspect_sbml_file(args.file), indent=2))
+            return 0
+        except (OSError, ValueError) as exc:
+            print(f"SBML inspection failed: {exc}", file=sys.stderr)
+            return 1
 
     if args.command == "audit":
         payload = FrontierPayload(
